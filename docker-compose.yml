@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  nginx:
+    container_name: cake_nginx
+    build:
+      context: ./docker/nginx/
+    ports:
+      - "80:80"
+    volumes:
+      - ./app/:/var/www/vhosts/cake/:cached
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:cached
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:cached
+      - ./docker/nginx/location.conf:/etc/nginx/conf.d/lib/location.conf:cached
+    depends_on:
+      - php
+
+  php:
+    container_name: cake_php
+    build:
+      context: ./docker/php/
+    environment:
+      TZ: Asia/Tokyo
+    volumes:
+      - ./app:/var/www/vhosts/cake/:cached
+      - ./docker/php/www.conf:/etc/php-fpm.d/www.conf:cached
+
+  db:
+    image: mysql:8.0
+    container_name: cake_db
+    hostname: mysql
+    expose:
+      - 3306
+    ports:
+      - "3306:3306"
+    environment:
+      - TZ=Asia/Tokyo
+      - MYSQL_ALLOW_EMPTY_PASSWORD=no
+      - MYSQL_DATABASE=caketest
+      - MYSQL_USER=cakeuser
+      - MYSQL_PASSWORD=cakepass
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --default-time-zone=Asia/Tokyo
+    volumes:
+      - ./database/config/:/etc/mysql/conf.d/
+    platform: linux/amd64
+
+  pma:
+    image: phpmyadmin/phpmyadmin
+    container_name: cake_pma
+    hostname: phpmyadmin
+    depends_on:
+      - db
+    ports:
+      - "9090:80"
+    platform: linux/amd64
