@@ -27,6 +27,7 @@ VOLUME ["/var/run/php-fpm"]
 
 RUN echo 'short_open_tag = On' >> /etc/php.ini
 RUN echo 'date.timezone = Asia/Tokyo' >> /etc/php.ini
+RUN echo 'zend.assertions = 1' >> /etc/php.ini
 EXPOSE 9000
 
 # run php-fpm in the foreground
